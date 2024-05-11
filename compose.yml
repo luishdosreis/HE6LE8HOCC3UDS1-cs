@@ -1,0 +1,46 @@
+version: '3.9'
+
+services:
+  mongo:
+    image: mongo
+    restart: always
+    env_file:
+    - path: ./app/.env
+  redis:
+    image: redis:7.2.4-alpine
+    restart: always
+    ports:
+      - '6379:6379'
+    command: redis-server --save 20 1 --loglevel warning
+    volumes: 
+      - redis:/data
+  worker:
+    build:
+      context: ./worker
+      target: builder
+    command: yarn start
+    env_file:
+    - path: ./worker/.env
+    deploy:
+      mode: replicated
+      replicas: 2 # worker concurrency level
+    depends_on:
+      - redis
+      - mongo
+  frontend:
+    build:
+      context: ./app
+      target: builder
+    restart: always
+    command: yarn start
+    env_file:
+    - path: ./app/.env
+    ports:
+      - 3000:3000
+    depends_on:
+      - redis
+      - mongo
+      - worker
+volumes:
+  redis:
+    driver: local
