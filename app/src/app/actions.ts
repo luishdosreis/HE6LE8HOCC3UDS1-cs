@@ -30,16 +30,10 @@ export async function requestScan(
       createdAt: new Date(),
     });
 
-    await scansQueue.add(
-      randomUUID(),
-      {
-        scanId: scanRecord.insertedId,
-        args,
-      },
-      {
-        attempts: 1,
-      }
-    );
+    await scansQueue.add(randomUUID(), {
+      scanId: scanRecord.insertedId,
+      args,
+    });
   } catch (error) {
     console.error(error);
     return { message: "Something went wrong" };

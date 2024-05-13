@@ -24,6 +24,16 @@ const getScanStatusColor = (status: string): string => {
   }
 };
 
+const formatDate = (date: string) => {
+  return new Date(date as unknown as string).toLocaleString("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
 export const ScansTable = ({ scans }: { scans: Scan[] }) => {
   return (
     <Table>
@@ -49,11 +59,9 @@ export const ScansTable = ({ scans }: { scans: Scan[] }) => {
                 <div className="rounded-full w-3 h-3 ml-auto mr-auto bg-red-500" />
               ) : null}
             </TableCell>
+            <TableCell>{formatDate(scan.createdAt.toString())}</TableCell>
             <TableCell>
-              {new Date(scan.createdAt as unknown as string).toUTCString()}
-            </TableCell>
-            <TableCell>
-              {new Date(scan.updatedAt as unknown as string)?.toUTCString()}
+              {scan.updatedAt ? formatDate(scan.updatedAt.toString()) : null}
             </TableCell>
             <TableCell className="text-right">
               {scan.status == "completed" ? (

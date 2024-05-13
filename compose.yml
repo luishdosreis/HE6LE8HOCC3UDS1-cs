@@ -9,8 +9,8 @@ services:
   redis:
     image: redis:7.2.4-alpine
     restart: always
-    ports:
-      - '6379:6379'
+    expose:
+      - 6379
     command: redis-server --save 20 1 --loglevel warning
     volumes: 
       - redis:/data
@@ -21,9 +21,6 @@ services:
     command: yarn start
     env_file:
     - path: ./worker/.env
-    deploy:
-      mode: replicated
-      replicas: 2 # worker concurrency level
     depends_on:
       - redis
       - mongo
