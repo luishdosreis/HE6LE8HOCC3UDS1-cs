@@ -25,6 +25,5 @@ I time-boxed this tech challenge, so I didn't get the chance to implement everyt
 - Frontend integration tests
 - E2E tests
 - Possibly having a separate backend server
-- Add react-query to frontend and long-poll `/api/scans/` endpoint in order to update scans statuses without the need for refreshing (websockets or SSEs are also valid options)
 - Potentially use a relational database (PostgreSQL?) - I went with Mongo for simplicity in order not to be dealing with migrations.
 - Adhering to a monorepo in order to have a `common` package to hold shared dependencies between `app` and `worker` i.e. database connection and models, nmap command sanitization/validation and any other shared Typescript deps.
