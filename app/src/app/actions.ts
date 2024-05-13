@@ -39,6 +39,5 @@ export async function requestScan(
     return { message: "Something went wrong" };
   }
 
-  revalidatePath("/");
   return { message: "created" };
 }

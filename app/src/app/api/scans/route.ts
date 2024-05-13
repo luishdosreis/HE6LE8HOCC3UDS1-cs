@@ -1,26 +1,9 @@
 import { getDb } from "@/lib/database";
-
-const parsePaginationQueryParams = ({
-  value,
-  defaultValue,
-  max,
-}: {
-  value?: string;
-  defaultValue: number;
-  max?: number;
-}): number => {
-  let param = defaultValue;
-  try {
-    param = parseInt(value || "0", 10);
-    param = Math.max(param, defaultValue);
-    if (max) {
-      param = Math.min(param, max);
-    }
-  } catch (error) {
-    param = defaultValue;
-  }
-  return param;
-};
+import { scansQueue } from "@/lib/queue";
+import { validateArgs } from "@/lib/sanitize";
+import { parsePaginationQueryParams } from "@/lib/utils";
+import { randomUUID } from "crypto";
+import { ObjectId } from "mongodb";
 
 export async function GET({ url }: Request) {
   const { searchParams } = new URL(url);
@@ -43,8 +26,6 @@ export async function GET({ url }: Request) {
     .limit(pageSize)
     .toArray();
 
-  console.log(data);
-
   const totalCount = await scansCollection.countDocuments();
 
   return Response.json({
@@ -53,4 +34,36 @@ export async function GET({ url }: Request) {
     page,
     pageSize,
   });
+}
+
+export async function POST(req: Request) {
+  const { scansCollection } = getDb();
+  const body = await req.json();
+  const args = body.args;
+
+  try {
+    validateArgs(body.args);
+  } catch (error) {
+    return Response.json({ message: "bad command arguments" }, { status: 400 });
+  }
+
+  try {
+    const scanRecord = await scansCollection.insertOne({
+      _id: new ObjectId().toString(),
+      status: "queued",
+      type: "nmap",
+      args,
+      createdAt: new Date(),
+    });
+
+    await scansQueue.add(randomUUID(), {
+      scanId: scanRecord.insertedId,
+      args,
+    });
+  } catch (error) {
+    console.error(error);
+    return Response.json({ message: "something went wrong" }, { status: 500 });
+  }
+
+  return Response.json({ message: "created" }, { status: 201 });
 }
